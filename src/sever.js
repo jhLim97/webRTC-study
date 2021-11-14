@@ -14,22 +14,26 @@ const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
+    socket["nickname"] = "Anon";
     socket.onAny((event) => {
         console.log(`Socket Event: ${event}`);
     });
     socket.on("enter_room", (roomName, done) => {
         socket.join(roomName);
         done();
-        socket.to(roomName).emit("welcome");
+        socket.to(roomName).emit("welcome", socket.nickname);
     });
     // 접속이 완전히 끊기지는 않은 상태 => 마지막 메세지나 이벤트 보낼수인
     socket.on("disconnecting", () => {
-        socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+        socket.rooms.forEach((room) =>
+            socket.to(room).emit("bye", socket.nickname)
+        );
     });
     socket.on("new_message", (msg, room, done) => {
-        socket.to(room).emit("new_message", msg);
+        socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
         done();
     });
+    socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
 });
 
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
