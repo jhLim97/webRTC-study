@@ -1,9 +1,11 @@
 // socket : 연결된 서버
 const socket = new WebSocket(`ws://${window.location.host}`);
 
-socket.addEventListener("open", () => {
+function handleOpen() {
   console.log("Connected to Server ✅");
-});
+}
+
+socket.addEventListener("open", handleOpen);
 
 socket.addEventListener("message", (message) => {
   console.log("New message: ", message.data);
@@ -16,5 +18,3 @@ socket.addEventListener("close", () => {
 setTimeout(() => {
   socket.send("hello from the browser!");
 }, 10000);
-
-socket.addEventListener('')
