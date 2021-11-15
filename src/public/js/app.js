@@ -161,7 +161,23 @@ socket.on("ice", (ice) => {
 
 function makeConnection() {
   // 영상과 데이터를 주고 받을 때 사용
-  myPeerConnection = new RTCPeerConnection();
+  myPeerConnection = new RTCPeerConnection({
+    // stun 서버는 컴퓨터가 공용 IP 주소를 찾게 해준다.
+    // 너의 장치에 공용 IP 주소를 알려주는 것
+    // 참고롤 실제 개발 시에는 우리의 stun 서버가 있어야한다.
+    iceServers: [
+      {
+        urls: [
+          "stun:stun.l.google.com:19302",
+          "stun:stun1.l.google.com:19302",
+          "stun:stun2.l.google.com:19302",
+          "stun:stun3.l.google.com:19302",
+          "stun:stun4.l.google.com:19302",
+        ],
+      },
+    ],
+  });
+   
   // icecandidate는 브라우저가 연결하기 위한 프로세스 => 여러 방법 제시 후 그 중 하나를 선택
   // offer, answer 과정 후에 진행해야함
   myPeerConnection.addEventListener("icecandidate", handleIce);
