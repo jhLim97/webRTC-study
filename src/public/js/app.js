@@ -125,14 +125,22 @@ socket.on("welcome", async () => {
 });
 
 socket.on("offer", async (offer) => {
+  console.log("received the offer");
   myPeerConnection.setRemoteDescription(offer);
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
+  console.log("sent the answer");
 });
 
 socket.on("answer", (answer) => {
+  console.log("received the answer");
   myPeerConnection.setRemoteDescription(answer);
+});
+
+socket.on("ice", (ice) => {
+  console.log("received candidate");
+  myPeerConnection.addIceCandidate(ice);
 });
 
 // RTC Code
@@ -140,7 +148,22 @@ socket.on("answer", (answer) => {
 function makeConnection() {
   // 영상과 데이터를 주고 받을 때 사용
   myPeerConnection = new RTCPeerConnection();
+  // icecandidate는 브라우저가 연결하기 위한 프로세스 => 여러 방법 제시 후 그 중 하나를 선택
+  // offer, answer 과정 후에 진행해야함
+  myPeerConnection.addEventListener("icecandidate", handleIce);
+  myPeerConnection.addEventListener("addstream", handleAddStream);
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
+
+function handleIce(data) {
+  console.log("sent candidate");
+  socket.emit("ice", data.candidate, roomName);
+}
+
+// 다른 peer와 스트림을 주고받음 => 해당 스트림으로 비디오 연결가능
+function handleAddStream(data) {
+  const peerFace = document.getElementById("peerFace");
+  peerFace.srcObject = data.stream;
 }
