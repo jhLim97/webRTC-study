@@ -85,7 +85,21 @@ function handleCameraClick() {
 }
 
 async function handleCameraChange() {
+  // 새로운 스트림 생성
   await getMedia(camerasSelect.value);
+  
+  // 연결 후 카메라를 바꾸는 경우 스트림을 변경되지만, track은 변경안되서 상대방은 반영안됨
+  // 아래 코드로 적용하기 => sender는 우리의 peer로 보내진 media stream track을 컨트롤하게 해준다.
+  if (myPeerConnection) {
+    // 나의 stream
+    const videoTrack = myStream.getVideoTracks()[0];
+    const videoSender = myPeerConnection
+      .getSenders()
+      .find((sender) => sender.track.kind === "video");
+    
+    // peer에게 전달한 track을 제어하기 위한 코드
+    videoSender.replaceTrack(videoTrack);
+  }
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
